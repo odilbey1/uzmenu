@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   Store,
   MapPin,
@@ -10,11 +12,14 @@ import {
   Loader2,
   Check,
   Save,
+  ArrowLeft,
+  UtensilsCrossed,
 } from 'lucide-react'
 import { updateMyRestaurant } from '@/app/actions/menu'
 import type { Restaurant } from '@/types/database.types'
 
 export default function SettingsForm({ restaurant }: { restaurant: Restaurant }) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -38,13 +43,25 @@ export default function SettingsForm({ restaurant }: { restaurant: Restaurant })
         setError(result.error)
       } else {
         setSuccess(true)
-        setTimeout(() => setSuccess(false), 3000)
+        setTimeout(() => {
+          router.push('/dashboard')
+          router.refresh()
+        }, 600)
       }
     })
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* Back Link */}
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Boshqaruv paneliga qaytish
+      </Link>
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">
           Sozlamalar
@@ -186,24 +203,39 @@ export default function SettingsForm({ restaurant }: { restaurant: Restaurant })
           </div>
         </div>
 
-        {/* Save Button */}
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm transition-all shadow-sm shadow-orange-500/25 disabled:opacity-60 cursor-pointer"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saqlanmoqda...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Saqlash
-            </>
-          )}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+          <button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm transition-all shadow-md shadow-orange-500/25 disabled:opacity-60 cursor-pointer"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Saqlanmoqda va yo‘naltirilmoqda...</span>
+              </>
+            ) : success ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Saqlandi! Bosh sahifaga o‘tilmoqda...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Saqlash va Bosh sahifaga o‘tish</span>
+              </>
+            )}
+          </button>
+
+          <Link
+            href="/dashboard/menu"
+            className="inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-sm transition-all cursor-pointer border border-stone-200/80"
+          >
+            <UtensilsCrossed className="w-4 h-4 text-orange-600" />
+            <span>Menyuni boshqarish →</span>
+          </Link>
+        </div>
       </form>
     </div>
   )
