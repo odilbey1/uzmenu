@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 const BUCKET_NAME = 'menu-images'
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -24,7 +24,7 @@ export async function uploadImage(
     return { url: null, error: 'Faqat JPG, PNG, WebP yoki GIF formatdagi rasmlar qabul qilinadi.' }
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Generate unique filename
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
@@ -55,7 +55,7 @@ export async function uploadImage(
  * Delete an image from Supabase Storage by its public URL.
  */
 export async function deleteImage(publicUrl: string): Promise<void> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Extract file path from the public URL
   const bucketPath = `${BUCKET_NAME}/`

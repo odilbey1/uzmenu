@@ -211,7 +211,7 @@ export async function createCategory(formData: FormData) {
     .eq('menu_id', menuId)
     .order('sort_order', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   const sortOrder = (lastCat?.sort_order || 0) + 1
 
@@ -315,7 +315,7 @@ export async function createItem(formData: FormData) {
     .eq('category_id', categoryId)
     .order('sort_order', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   const sortOrder = (lastItem?.sort_order || 0) + 1
 
