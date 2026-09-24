@@ -6,8 +6,15 @@ import { UtensilsCrossed, Mail, Lock, Loader2, ArrowRight } from 'lucide-react'
 import { login } from '@/app/actions/auth'
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  function fillSuperAdmin() {
+    setEmail('admin@uzmenu.uz')
+    setPassword('Admin123456!')
+  }
 
   async function handleSubmit(formData: FormData) {
     setError(null)
@@ -51,6 +58,26 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Quick Super Admin Helper Box */}
+          <div className="mb-5 p-3.5 bg-violet-50/80 border border-violet-200/80 rounded-2xl">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
+                👑 Super Admin hisobi tayyor:
+              </span>
+              <button
+                type="button"
+                onClick={fillSuperAdmin}
+                className="text-[11px] font-bold text-violet-700 bg-violet-100 hover:bg-violet-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                1-bosishda to‘ldirish ⚡
+              </button>
+            </div>
+            <div className="mt-1.5 text-[11px] text-violet-700 font-mono flex items-center justify-between">
+              <span>admin@uzmenu.uz</span>
+              <span>Admin123456!</span>
+            </div>
+          </div>
+
           {/* Error */}
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
@@ -69,6 +96,8 @@ export default function LoginPage() {
                   type="email"
                   id="email"
                   name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="admin@restoran.uz"
                   className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all bg-white"
@@ -87,6 +116,8 @@ export default function LoginPage() {
                   type="password"
                   id="password"
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
                   className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all bg-white"
