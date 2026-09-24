@@ -12,8 +12,10 @@ import {
 import { getDashboardStats, getAllRestaurants } from '@/app/actions/super-admin'
 
 export default async function SuperAdminDashboard() {
-  const stats = await getDashboardStats()
-  const restaurants = await getAllRestaurants()
+  const [stats, restaurants] = await Promise.all([
+    getDashboardStats(),
+    getAllRestaurants(),
+  ])
   const recentRestaurants = restaurants.slice(0, 5)
 
   const statCards = [

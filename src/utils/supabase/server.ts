@@ -1,8 +1,12 @@
+import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database.types'
 
-export async function createClient() {
+/**
+ * Cached Supabase client per request (React cache avoids multiple client creations)
+ */
+export const createClient = cache(async () => {
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
@@ -19,11 +23,26 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
+            // Ignored when called from Server Components
           }
         },
       },
     }
   )
-}
+})
+
+/**
+ * Cached current user per request.
+ * Multiple components calling this in the same request only hit Supabase once.
+ */
+export const getCurrentUser = cache(async () => {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    return user
+  } catch {
+    return null
+  }
+})

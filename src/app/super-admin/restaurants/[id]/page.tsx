@@ -23,24 +23,6 @@ type PageProps = {
 
 export default async function RestaurantDetailPage({ params }: PageProps) {
   const { id } = await params
-  const supabase = await createClient()
-
-  // Verify super admin
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'super_admin') redirect('/dashboard')
-
-  // Fetch restaurant with admin profile
   const adminSupabase = createAdminClient()
   const { data: restaurant } = await adminSupabase
     .from('restaurants')
