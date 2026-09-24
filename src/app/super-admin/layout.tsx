@@ -18,24 +18,15 @@ export default async function SuperAdminLayout({
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-  let user: { id: string; email?: string } | null = null
-  let profile: Profile | null = null
+  let user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null = null
 
   try {
     const { data } = await supabase.auth.getUser()
     user = data.user
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-      profile = profileData as Profile | null
-    }
   } catch {}
 
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Super Admin (Demo)'
-  const displayEmail = user?.email || 'superadmin@qrmenu.uz'
+  const displayName = (user?.user_metadata?.full_name as string) || user?.email?.split('@')[0] || 'Super Admin'
+  const displayEmail = user?.email || 'admin@uzmenu.uz'
 
   const navItems = [
     { href: '/super-admin', label: 'Dashboard', icon: LayoutDashboard },

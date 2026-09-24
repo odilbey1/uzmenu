@@ -16,6 +16,13 @@ async function requireSuperAdmin() {
     } = await supabase.auth.getUser()
 
     if (user) {
+      if (
+        user.user_metadata?.role === 'super_admin' ||
+        user.email === 'admin@uzmenu.uz'
+      ) {
+        return { supabase, user }
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -29,7 +36,7 @@ async function requireSuperAdmin() {
   } catch {}
 
   // Fallback demo user for testing
-  return { supabase, user: { id: 'demo-super-admin-id', email: 'superadmin@qrmenu.uz' } }
+  return { supabase, user: { id: 'demo-super-admin-id', email: 'admin@uzmenu.uz' } }
 }
 
 /**

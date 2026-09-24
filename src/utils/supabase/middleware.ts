@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Refreshing the auth token
+  // Fast-path: Check authentication without blocking database queries
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -47,39 +47,27 @@ export async function updateSession(request: NextRequest) {
   const isDashboardRoute = pathname.startsWith('/dashboard')
   const isAuthRoute = pathname === '/login' || pathname === '/signup'
 
-  const isDevBypass = !supabaseUrl || supabaseUrl.includes('your-project-id')
-
-  // Not authenticated — in production redirect to login, in dev bypass allow access
+  // Not authenticated — redirect protected routes to login
   if (!user && (isSuperAdminRoute || isDashboardRoute)) {
-    if (isDevBypass) {
-      return supabaseResponse
-    }
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(url)
   }
 
-  // Authenticated user — check role for protected routes
+  // Authenticated user — check role from user metadata (instant, no DB query)
   if (user) {
-    // Fetch profile role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const role = profile?.role || 'admin'
+    const role = (user.user_metadata?.role as string) || (user.email === 'admin@uzmenu.uz' ? 'super_admin' : 'admin')
 
     // Super Admin route — only super_admin role allowed
-    if (isSuperAdminRoute && role !== 'super_admin' && !isDevBypass) {
+    if (isSuperAdminRoute && role !== 'super_admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
 
-    // Dashboard route — only admin role allowed
-    if (isDashboardRoute && role === 'super_admin' && !isDevBypass) {
+    // Dashboard route — super_admin goes to super-admin
+    if (isDashboardRoute && role === 'super_admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/super-admin'
       return NextResponse.redirect(url)
