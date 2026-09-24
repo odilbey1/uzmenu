@@ -19,7 +19,10 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
-    return { error: error.message || 'Kirishda xatolik yuz berdi. Ma\'lumotlarni tekshiring.' }
+    const errorMsg = error.message?.toLowerCase().includes('invalid login credentials')
+      ? 'Email yoki parol noto‘g‘ri kiritildi. Iltimos, qaytadan tekshirib ko‘ring.'
+      : (error.message || 'Kirishda xatolik yuz berdi. Ma\'lumotlarni tekshiring.')
+    return { error: errorMsg }
   }
 
   // Fetch user role to redirect appropriately
