@@ -16,6 +16,7 @@ import {
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { deleteRestaurantAndAdmin } from '@/app/actions/super-admin'
+import AdminCredentialsCard from './AdminCredentialsCard'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -48,6 +49,10 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
   if (!restaurant) {
     redirect('/super-admin/restaurants')
   }
+
+  // Fetch auth user metadata to retrieve password
+  const { data: authUserData } = await adminSupabase.auth.admin.getUserById(restaurant.user_id)
+  const adminPlainPassword = (authUserData?.user?.user_metadata?.plain_password as string) || ''
 
   const adminProfile = restaurant.profiles as Record<string, unknown> | null
   const menus = restaurant.menus as Array<Record<string, unknown>> | undefined
@@ -147,37 +152,16 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Admin Info */}
-      {adminProfile && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-emerald-400" />
-            Admin ma'lumotlari
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-xs text-slate-500">To'liq ism</span>
-              <div className="text-white font-medium">
-                {(adminProfile.full_name as string) || 'Kiritilmagan'}
-              </div>
-            </div>
-            <div>
-              <span className="text-xs text-slate-500">Email</span>
-              <div className="text-white font-medium flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-slate-500" />
-                {adminProfile.email as string}
-              </div>
-            </div>
-            <div>
-              <span className="text-xs text-slate-500">Ro'yxatdan o'tgan</span>
-              <div className="text-white font-medium flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                {new Date(adminProfile.created_at as string).toLocaleDateString('uz-UZ')}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Admin Credentials & Info */}
+      <AdminCredentialsCard
+        adminUserId={restaurant.user_id}
+        fullName={(adminProfile?.full_name as string) || ''}
+        email={(adminProfile?.email as string) || (authUserData?.user?.email as string) || ''}
+        initialPassword={adminPlainPassword}
+        registeredAt={(adminProfile?.created_at as string) || restaurant.created_at}
+        restaurantName={restaurant.name}
+        restaurantSlug={restaurant.slug}
+      />
 
       {/* Menus */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">

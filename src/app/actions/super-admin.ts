@@ -69,27 +69,51 @@ export async function getDashboardStats(): Promise<SuperAdminStats> {
 export async function getAllRestaurants() {
   try {
     const { supabase } = await requireSuperAdmin()
+    const adminSupabase = createAdminClient()
 
-    const { data, error } = await supabase
-      .from('restaurants')
-      .select(`
-        *,
-        profiles:user_id (
-          id,
-          email,
-          full_name,
-          role
-        ),
-        menus (
-          id,
-          name,
-          is_active
-        )
-      `)
-      .order('created_at', { ascending: false })
+    const [restaurantsRes, usersRes] = await Promise.all([
+      supabase
+        .from('restaurants')
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            email,
+            full_name,
+            role
+          ),
+          menus (
+            id,
+            name,
+            is_active
+          )
+        `)
+        .order('created_at', { ascending: false }),
+      adminSupabase.auth.admin.listUsers().catch(() => ({ data: { users: [] } })),
+    ])
 
-    if (!error && data && data.length > 0) {
-      return data
+    const data = restaurantsRes.data
+    const users = usersRes.data?.users || []
+    const passwordMap = new Map<string, string>()
+    users.forEach((u) => {
+      if (u.user_metadata?.plain_password) {
+        passwordMap.set(u.id, u.user_metadata.plain_password as string)
+      }
+    })
+
+    if (!restaurantsRes.error && data && data.length > 0) {
+      return data.map((r) => {
+        const prof = r.profiles as Record<string, unknown> | null
+        return {
+          ...r,
+          profiles: prof
+            ? {
+                ...prof,
+                plain_password: passwordMap.get(prof.id as string) || null,
+              }
+            : null,
+        }
+      })
     }
   } catch {}
 
@@ -209,6 +233,7 @@ export async function createAdminWithRestaurant(formData: FormData) {
     email_confirm: true, // Auto-confirm email
     user_metadata: {
       full_name: adminFullName || '',
+      plain_password: adminPassword,
     },
   })
 
@@ -338,4 +363,38 @@ export async function deleteRestaurantAndAdmin(restaurantId: string) {
   }
 
   redirect('/super-admin/restaurants')
+}
+
+/**
+ * Update an admin's password and keep plain_password in sync for Super Admin view.
+ */
+export async function updateAdminPassword(userId: string, newPassword: string) {
+  await requireSuperAdmin()
+
+  if (!newPassword || newPassword.length < 6) {
+    return { error: 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak.' }
+  }
+
+  const adminSupabase = createAdminClient()
+  const { data: userData, error: getUserError } = await adminSupabase.auth.admin.getUserById(userId)
+
+  if (getUserError || !userData?.user) {
+    return { error: 'Foydalanuvchi topilmadi.' }
+  }
+
+  const currentMeta = userData.user.user_metadata || {}
+
+  const { error } = await adminSupabase.auth.admin.updateUserById(userId, {
+    password: newPassword,
+    user_metadata: {
+      ...currentMeta,
+      plain_password: newPassword,
+    },
+  })
+
+  if (error) {
+    return { error: error.message || 'Parolni yangilashda xatolik yuz berdi.' }
+  }
+
+  return { success: true }
 }

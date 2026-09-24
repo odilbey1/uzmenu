@@ -8,6 +8,7 @@ import {
   Search,
   Mail,
   User,
+  Lock,
 } from 'lucide-react'
 import { getAllRestaurants } from '@/app/actions/super-admin'
 
@@ -95,18 +96,33 @@ export default async function RestaurantsListPage() {
                     {restaurant.name as string}
                   </h3>
 
-                  {/* Admin Info */}
+                  {/* Admin Info & Credentials */}
                   {profiles && (
-                    <div className="mt-3 p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <User className="w-3.5 h-3.5 text-violet-400 shrink-0" />
-                        <span className="truncate font-medium">
-                          {(profiles.full_name as string) || 'Ism kiritilmagan'}
-                        </span>
+                    <div className="mt-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 text-slate-300 font-medium truncate">
+                          <User className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                          <span className="truncate">
+                            {(profiles.full_name as string) || 'Ism kiritilmagan'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                        <span className="truncate">{profiles.email as string}</span>
+                      <div className="flex items-center justify-between text-xs bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-800">
+                        <div className="flex items-center gap-1.5 text-slate-400 min-w-0">
+                          <Mail className="w-3 h-3 text-slate-500 shrink-0" />
+                          <span className="text-slate-300 truncate font-mono">
+                            {profiles.email as string}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-xs bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-800">
+                        <div className="flex items-center gap-1.5 text-slate-400 min-w-0">
+                          <Lock className="w-3 h-3 text-amber-400 shrink-0" />
+                          <span className="text-slate-500">Parol:</span>
+                          <span className="text-emerald-400 font-semibold font-mono truncate">
+                            {(profiles.plain_password as string) || '••••••••'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}
