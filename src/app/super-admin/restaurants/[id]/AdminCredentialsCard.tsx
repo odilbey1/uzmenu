@@ -101,21 +101,18 @@ export default function AdminCredentialsCard({
 🔑 Parol: ${password || '(parol o\'rnatilmagan)'}`
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl relative overflow-hidden">
-      {/* Decorative gradient blur */}
-      <div className="absolute top-0 right-0 w-64 h-32 bg-violet-600/10 blur-3xl pointer-events-none rounded-full" />
-
+    <div className="bg-white border border-stone-200/80 rounded-2xl shadow-sm p-6 space-y-6 relative overflow-hidden">
       {/* Card Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-stone-200">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold">
+          <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
             <KeyRound className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              Admin ma'lumotlari & Kirish kalitlari
+            <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
+              Admin ma&apos;lumotlari & Kirish kalitlari
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-stone-500">
               Ushbu restoran adminining login va maxfiy paroli
             </p>
           </div>
@@ -124,12 +121,12 @@ export default function AdminCredentialsCard({
         <button
           type="button"
           onClick={() => copyToClipboard(fullCredentialsText, 'all')}
-          className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+          className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-700 border border-emerald-500/30 text-xs font-semibold transition-all cursor-pointer shadow-sm"
         >
           {copiedType === 'all' ? (
             <>
-              <Check className="w-4 h-4 text-emerald-300" />
-              <span>Nusxalandi! (Mijozga jo'nating)</span>
+              <Check className="w-4 h-4 text-emerald-700" />
+              <span>Nusxalandi! (Mijozga jo&apos;nating)</span>
             </>
           ) : (
             <>
@@ -142,7 +139,7 @@ export default function AdminCredentialsCard({
 
       {/* Success Notification */}
       {updateSuccess && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs px-4 py-3 rounded-xl flex items-center gap-2">
+        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs px-4 py-3 rounded-xl flex items-center gap-2">
           <Check className="w-4 h-4 shrink-0" />
           <span>{updateSuccess}</span>
         </div>
@@ -151,43 +148,43 @@ export default function AdminCredentialsCard({
       {/* Credentials Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Name */}
-        <div className="bg-slate-800/40 border border-slate-800 p-4 rounded-xl space-y-1">
-          <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-slate-400" />
-            To'liq ism
+        <div className="bg-stone-50/40 border border-stone-200 p-4 rounded-xl space-y-1">
+          <span className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5 text-stone-500" />
+            To&apos;liq ism
           </span>
-          <div className="text-white font-medium text-sm pt-0.5">
+          <div className="text-stone-900 font-medium text-sm pt-0.5">
             {fullName || 'Kiritilmagan'}
           </div>
         </div>
 
         {/* Registered At */}
-        <div className="bg-slate-800/40 border border-slate-800 p-4 rounded-xl space-y-1">
-          <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            Ro'yxatdan o'tgan sana
+        <div className="bg-stone-50/40 border border-stone-200 p-4 rounded-xl space-y-1">
+          <span className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-stone-500" />
+            Ro&apos;yxatdan o&apos;tgan sana
           </span>
-          <div className="text-white font-medium text-sm pt-0.5">
+          <div className="text-stone-900 font-medium text-sm pt-0.5">
             {registeredAt ? new Date(registeredAt).toLocaleDateString('uz-UZ') : 'Noma\'lum'}
           </div>
         </div>
 
         {/* Email / Login */}
-        <div className="bg-slate-800/60 border border-slate-700/60 p-4 rounded-xl space-y-2">
+        <div className="bg-stone-50/60 border border-stone-200/60 p-4 rounded-xl space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-violet-400" />
+            <span className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-orange-600" />
               Login (Email)
             </span>
             <button
               type="button"
               onClick={() => copyToClipboard(email, 'email')}
-              className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1 transition-colors cursor-pointer"
             >
               {copiedType === 'email' ? (
                 <>
-                  <Check className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400">Nusxalandi</span>
+                  <Check className="w-3 h-3 text-emerald-700" />
+                  <span className="text-emerald-700">Nusxalandi</span>
                 </>
               ) : (
                 <>
@@ -197,23 +194,23 @@ export default function AdminCredentialsCard({
               )}
             </button>
           </div>
-          <div className="text-white font-mono text-sm bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800 truncate select-all">
+          <div className="text-stone-900 font-mono text-sm bg-white/80 px-3 py-2 rounded-lg border border-stone-200 truncate select-all">
             {email}
           </div>
         </div>
 
         {/* Password */}
-        <div className="bg-slate-800/60 border border-slate-700/60 p-4 rounded-xl space-y-2">
+        <div className="bg-stone-50/60 border border-stone-200/60 p-4 rounded-xl space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-amber-700" />
               Parol
             </span>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                className="text-xs text-stone-500 hover:text-stone-900 flex items-center gap-1 transition-colors cursor-pointer"
               >
                 {showPassword ? (
                   <>
@@ -223,7 +220,7 @@ export default function AdminCredentialsCard({
                 ) : (
                   <>
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Ko'rsatish</span>
+                    <span>Ko&apos;rsatish</span>
                   </>
                 )}
               </button>
@@ -232,12 +229,12 @@ export default function AdminCredentialsCard({
                 <button
                   type="button"
                   onClick={() => copyToClipboard(password, 'password')}
-                  className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
+                  className="text-xs text-amber-700 hover:text-amber-800 flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   {copiedType === 'password' ? (
                     <>
-                      <Check className="w-3 h-3 text-emerald-400" />
-                      <span className="text-emerald-400">Nusxalandi</span>
+                      <Check className="w-3 h-3 text-emerald-700" />
+                      <span className="text-emerald-700">Nusxalandi</span>
                     </>
                   ) : (
                     <>
@@ -250,8 +247,8 @@ export default function AdminCredentialsCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-between bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800">
-            <span className="font-mono text-sm text-emerald-400 font-semibold select-all">
+          <div className="flex items-center justify-between bg-white/80 px-3 py-2 rounded-lg border border-stone-200">
+            <span className="font-mono text-sm text-emerald-700 font-semibold select-all">
               {password ? (showPassword ? password : '••••••••••••') : '(parol saqlanmagan)'}
             </span>
 
@@ -261,7 +258,7 @@ export default function AdminCredentialsCard({
                 setIsEditing(!isEditing)
                 setUpdateError(null)
               }}
-              className="text-xs text-violet-400 hover:text-violet-300 font-medium ml-2 cursor-pointer transition-colors"
+              className="text-xs text-orange-600 hover:text-orange-700 font-medium ml-2 cursor-pointer transition-colors"
             >
               {isEditing ? 'Bekor qilish' : 'O\'zgartirish'}
             </button>
@@ -271,16 +268,16 @@ export default function AdminCredentialsCard({
 
       {/* Change Password Panel */}
       {isEditing && (
-        <div className="bg-slate-950/70 border border-violet-500/30 rounded-xl p-5 space-y-4 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-violet-400" />
-              Yangi parol o'rnatish
+        <div className="bg-stone-50/70 border border-orange-300/30 rounded-xl p-5 space-y-4 animate-in fade-in duration-200">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-orange-600" />
+              Yangi parol o&apos;rnatish
             </h3>
             <button
               type="button"
               onClick={generateRandomPassword}
-              className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 cursor-pointer font-medium"
+              className="text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1 cursor-pointer font-medium"
             >
               <RefreshCw className="w-3 h-3" />
               Tasodifiy parol generatsiya
@@ -288,7 +285,7 @@ export default function AdminCredentialsCard({
           </div>
 
           {updateError && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3.5 py-2.5 rounded-lg flex items-center gap-2">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-600 text-xs px-3.5 py-2.5 rounded-lg flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{updateError}</span>
             </div>
@@ -296,20 +293,21 @@ export default function AdminCredentialsCard({
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <input
                 type="text"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                aria-label="Yangi parol"
                 placeholder="Yangi parolni kiriting (kamida 6 ta belgi)"
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white placeholder:text-slate-600 font-mono focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-stone-200 text-sm text-stone-900 placeholder:text-stone-500 font-mono focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
             <button
               type="button"
               onClick={handleSaveNewPassword}
               disabled={isUpdating || !newPassword}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+              className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
             >
               {isUpdating ? (
                 <>

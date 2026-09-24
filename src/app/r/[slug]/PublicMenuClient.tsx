@@ -15,9 +15,6 @@ import {
   Users,
   Smile,
   Soup,
-  ChevronRight,
-  UtensilsCrossed,
-  Globe,
 } from 'lucide-react'
 import { VISUAL_CATEGORIES, VisualCategory, MenuItem } from './menuData'
 
@@ -149,6 +146,7 @@ export default function PublicMenuClient({
             <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
+              aria-label="Menyudan taom qidirish"
               placeholder="Taom, lavash, burger yoki ichimlik qidirish..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,6 +154,7 @@ export default function PublicMenuClient({
             />
             {searchQuery && (
               <button
+                aria-label="Qidiruvni tozalash"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 cursor-pointer"
               >
@@ -168,6 +167,13 @@ export default function PublicMenuClient({
 
       {/* 2. MAIN BODY */}
       <main className="max-w-6xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6">
+        {!activeCategory && !searchQuery.trim() && (
+          <section className="py-7 sm:py-10 mb-5 border-b border-neutral-800">
+            <p className="text-orange-400 text-[10px] font-semibold tracking-[0.2em] uppercase mb-3">Ta’m va yaxshi kayfiyat</p>
+            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">Bugun nima tanlaysiz?</h2>
+            <p className="text-neutral-400 text-sm mt-3 leading-relaxed">Sevimli taomingizni toping. Bo‘limni tanlang va menyu bilan tanishing.</p>
+          </section>
+        )}
         {/* If Searching, show search results */}
         {searchQuery.trim() ? (
           <div className="space-y-4">
@@ -332,6 +338,9 @@ export default function PublicMenuClient({
             {VISUAL_CATEGORIES.map((cat) => (
               <div
                 key={cat.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleCardClick(cat) } }}
                 onClick={() => handleCardClick(cat)}
                 className="relative aspect-[3/4] sm:aspect-[4/5] rounded-2xl sm:rounded-3xl overflow-hidden border border-neutral-800/90 bg-neutral-900 group cursor-pointer shadow-xl hover:border-neutral-600 hover:shadow-2xl transition-all duration-300 select-none"
               >

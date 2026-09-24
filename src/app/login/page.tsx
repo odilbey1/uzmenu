@@ -40,7 +40,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50/30 to-stone-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#f3f4ef] flex flex-col items-center justify-center p-4 overflow-x-clip">
       {/* Ambient glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-to-tr from-orange-400/10 via-amber-300/10 to-transparent blur-3xl pointer-events-none rounded-full" />
 
@@ -56,11 +56,11 @@ export default function LoginPage() {
         </Link>
 
         {/* Login Card */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-stone-200/80 shadow-xl shadow-stone-200/30 p-8">
+        <div className="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-stone-200/20 p-6 sm:p-9">
           <div className="text-center mb-6">
-            <h1 className="text-xl font-bold text-stone-900">Tizimga kirish</h1>
+            <h1 className="text-3xl tracking-tight font-semibold text-stone-900">Tizimga kirish</h1>
             <p className="text-sm text-stone-500 mt-1">
-              Admin paneliga kirish uchun ma'lumotlaringizni kiriting
+              Admin paneliga kirish uchun ma’lumotlaringizni kiriting
             </p>
           </div>
 
@@ -122,6 +122,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
+                  autoComplete="username"
                   type="email"
                   id="email"
                   name="email"
@@ -143,6 +144,7 @@ export default function LoginPage() {
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   id="password"
                   name="password"
                   value={password}
@@ -153,6 +155,7 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? 'Parolni yashirish' : 'Parolni ko‘rsatish'}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
                 >
@@ -183,7 +186,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-stone-400 mt-6">
-          Kirish ma'lumotlaringiz yo'qmi? Super admin bilan bog'laning.
+          Kirish ma’lumotlaringiz yo‘qmi? Super admin bilan bog‘laning.
         </p>
       </div>
     </div>
