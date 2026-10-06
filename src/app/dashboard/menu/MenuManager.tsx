@@ -38,7 +38,7 @@ export default function MenuManager({
   initialCategories: CategoryWithItems[]
   currency: string
 }) {
-  const [categories, setCategories] = useState(initialCategories)
+  const categories = initialCategories
   const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     initialCategories.forEach((c) => (initial[c.id] = true))
@@ -108,7 +108,8 @@ export default function MenuManager({
   async function handleDeleteCategory(catId: string) {
     if (!confirm('Bu kategoriya va undagi barcha taomlar o\'chiriladi. Davom etasizmi?')) return
     startTransition(async () => {
-      await deleteCategory(catId)
+      const result = await deleteCategory(catId)
+      if (result?.error) { setError(result.error); return }
       window.location.reload()
     })
   }
@@ -138,14 +139,16 @@ export default function MenuManager({
   async function handleDeleteItem(itemId: string) {
     if (!confirm('Bu taomni o\'chirmoqchimisiz?')) return
     startTransition(async () => {
-      await deleteItem(itemId)
+      const result = await deleteItem(itemId)
+      if (result?.error) { setError(result.error); return }
       window.location.reload()
     })
   }
 
   async function handleToggleAvailability(itemId: string, current: boolean) {
     startTransition(async () => {
-      await toggleItemAvailability(itemId, !current)
+      const result = await toggleItemAvailability(itemId, !current)
+      if (result?.error) { setError(result.error); return }
       window.location.reload()
     })
   }
@@ -165,6 +168,7 @@ export default function MenuManager({
 
   return (
     <div className="space-y-6">
+      {error && !showCategoryModal && !showItemModal && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -172,7 +176,7 @@ export default function MenuManager({
             Menyu boshqaruvi
           </h1>
           <p className="mt-1 text-sm text-stone-500">
-            Kategoriyalar va taomlarni qo'shing, tahrirlang, o'chiring
+            Kategoriyalar va taomlarni qo&apos;shing, tahrirlang, o&apos;chiring
           </p>
         </div>
         <button
@@ -191,10 +195,10 @@ export default function MenuManager({
             <Layers className="w-8 h-8" />
           </div>
           <h3 className="text-lg font-bold text-stone-900">
-            Hozircha kategoriya yo'q
+            Hozircha kategoriya yo&apos;q
           </h3>
           <p className="mt-2 text-sm text-stone-500 max-w-md mx-auto">
-            Birinchi kategoriyangizni yarating va taomlarni qo'shishni boshlang.
+            Birinchi kategoriyangizni yarating va taomlarni qo&apos;shishni boshlang.
           </p>
           <button
             onClick={openAddCategory}
@@ -273,14 +277,14 @@ export default function MenuManager({
                   {cat.items.length === 0 ? (
                     <div className="px-5 py-6 text-center">
                       <p className="text-xs text-stone-400 mb-3">
-                        Bu kategoriyada hali taom yo'q
+                        Bu kategoriyada hali taom yo&apos;q
                       </p>
                       <button
                         onClick={() => openAddItem(cat.id)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 text-xs font-medium hover:bg-orange-100 transition-all cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        Taom qo'shish
+                        Taom qo&apos;shish
                       </button>
                     </div>
                   ) : (
@@ -368,7 +372,7 @@ export default function MenuManager({
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-orange-600 hover:bg-orange-50 transition-all cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        Taom qo'shish
+                        Taom qo&apos;shish
                       </button>
                     </div>
                   )}

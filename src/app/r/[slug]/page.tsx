@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import PublicMenuClient, { PublicRestaurantData } from './PublicMenuClient'
 
@@ -171,7 +172,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
     return <PublicMenuClient restaurant={DEMO_RESTAURANT} />
   }
 
-  try {
+  {
     const supabase = await createClient()
 
     // 1. Fetch restaurant and its active menu with categories and items
@@ -208,18 +209,8 @@ export default async function PublicMenuPage({ params }: PageProps) {
       .eq('slug', slug)
       .maybeSingle()
 
-    if (error || !restaurant) {
-      // If restaurant not found in database, show demo restaurant with requested slug name
-      return (
-        <PublicMenuClient
-          restaurant={{
-            ...DEMO_RESTAURANT,
-            slug,
-            name: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Restoran`,
-          }}
-        />
-      )
-    }
+    if (error) throw new Error('Menyuni yuklab bo?lmadi. Qayta urinib ko?ring.')
+    if (!restaurant) notFound()
 
     // Find active menu
     const rawMenus = (restaurant as unknown as {
@@ -244,25 +235,10 @@ export default async function PublicMenuPage({ params }: PageProps) {
       }>
     }).menus
 
-    const activeMenu = rawMenus?.find((m) => m.is_active) || rawMenus?.[0]
-
-    if (!activeMenu || !activeMenu.categories || activeMenu.categories.length === 0) {
-      return (
-        <PublicMenuClient
-          restaurant={{
-            ...DEMO_RESTAURANT,
-            name: restaurant.name,
-            slug: restaurant.slug,
-            address: restaurant.address,
-            phone: restaurant.phone,
-            currency: restaurant.currency || 'UZS',
-          }}
-        />
-      )
-    }
+    const activeMenu = rawMenus?.find((m) => m.is_active)
 
     // Sort categories and items
-    const formattedCategories = activeMenu.categories
+    const formattedCategories = (activeMenu?.categories || [])
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
       .map((cat) => ({
         id: cat.id,
@@ -285,7 +261,5 @@ export default async function PublicMenuPage({ params }: PageProps) {
     }
 
     return <PublicMenuClient restaurant={restaurantData} />
-  } catch {
-    return <PublicMenuClient restaurant={DEMO_RESTAURANT} />
   }
 }

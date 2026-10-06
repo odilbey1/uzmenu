@@ -1,189 +1,50 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
+import { requireSuperAdmin } from '@/utils/supabase/authorization'
+import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/utils/supabase/admin'
 import type { SuperAdminStats } from '@/types/database.types'
 
-/**
- * Verify the current user is a super admin. Throws/redirects if not.
- */
-async function requireSuperAdmin() {
-  const supabase = await createClient()
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (user) {
-      if (
-        user.user_metadata?.role === 'super_admin' ||
-        user.email === 'admin@uzmenu.uz'
-      ) {
-        return { supabase, user }
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role === 'super_admin') {
-        return { supabase, user }
-      }
-    }
-  } catch {}
-
-  // Fallback demo user for testing
-  return { supabase, user: { id: 'demo-super-admin-id', email: 'admin@uzmenu.uz' } }
-}
-
-/**
- * Get dashboard statistics for super admin.
- */
 export async function getDashboardStats(): Promise<SuperAdminStats> {
+  const fallbackStats: SuperAdminStats = {
+    total_restaurants: 0,
+    total_admins: 0,
+    total_menus: 0,
+    total_items: 0,
+    total_categories: 0,
+    total_qr_scans: 0,
+  }
+
   try {
     const { supabase } = await requireSuperAdmin()
     const { data, error } = await supabase.rpc('get_super_admin_stats')
-
-    if (!error && data) {
-      return data as unknown as SuperAdminStats
+    if (error || !data) {
+      console.error('getDashboardStats error:', error)
+      return fallbackStats
     }
-  } catch {}
-
-  // Demo stats
-  return {
-    total_restaurants: 5,
-    total_admins: 5,
-    total_menus: 8,
-    total_items: 124,
-    total_categories: 24,
-    total_qr_scans: 850,
+    return data as unknown as SuperAdminStats
+  } catch (err) {
+    console.error('getDashboardStats unexpected error:', err)
+    return fallbackStats
   }
 }
 
-/**
- * Get all restaurants with their admin profile info.
- */
 export async function getAllRestaurants() {
   try {
     const { supabase } = await requireSuperAdmin()
-    const adminSupabase = createAdminClient()
-
-    const [restaurantsRes, usersRes] = await Promise.all([
-      supabase
-        .from('restaurants')
-        .select(`
-          *,
-          profiles:user_id (
-            id,
-            email,
-            full_name,
-            role
-          ),
-          menus (
-            id,
-            name,
-            is_active
-          )
-        `)
-        .order('created_at', { ascending: false }),
-      adminSupabase.auth.admin.listUsers().catch(() => ({ data: { users: [] } })),
-    ])
-
-    const data = restaurantsRes.data
-    const users = usersRes.data?.users || []
-    const passwordMap = new Map<string, string>()
-    users.forEach((u) => {
-      if (u.user_metadata?.plain_password) {
-        passwordMap.set(u.id, u.user_metadata.plain_password as string)
-      }
-    })
-
-    if (!restaurantsRes.error && data && data.length > 0) {
-      return data.map((r) => {
-        const prof = r.profiles as Record<string, unknown> | null
-        return {
-          ...r,
-          profiles: prof
-            ? {
-                ...prof,
-                plain_password: passwordMap.get(prof.id as string) || null,
-              }
-            : null,
-        }
-      })
+    const { data, error } = await supabase.from('restaurants').select(`
+      *, profiles:user_id (id, email, full_name, role), menus (id, name, is_active)
+    `).order('created_at', { ascending: false })
+    if (error) {
+      console.error('getAllRestaurants error:', error)
+      return []
     }
-  } catch {}
-
-  // Demo sample restaurants
-  return [
-    {
-      id: 'demo-1',
-      name: 'Rayhon Burger & Lounge',
-      slug: 'demo',
-      address: 'Toshkent sh., Chilonzor 9-mavze, 24-uy',
-      phone: '+998 71 200 11 22',
-      currency: 'UZS',
-      created_at: new Date().toISOString(),
-      profiles: {
-        id: 'adm-1',
-        email: 'rayhon.admin@qrmenu.uz',
-        full_name: 'Akmal Karimov',
-        role: 'admin' as const,
-      },
-      menus: [{ id: 'm-1', name: 'Asosiy menyu', is_active: true }],
-    },
-    {
-      id: 'demo-2',
-      name: 'Oqtepa Lavash Fast Food',
-      slug: 'oqtepa',
-      address: 'Toshkent sh., Yunusobod 14-mavze',
-      phone: '+998 78 150 00 30',
-      currency: 'UZS',
-      created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-      profiles: {
-        id: 'adm-2',
-        email: 'oqtepa@qrmenu.uz',
-        full_name: 'Javohir Saidov',
-        role: 'admin' as const,
-      },
-      menus: [{ id: 'm-2', name: 'Yozgi menyu', is_active: true }],
-    },
-    {
-      id: 'demo-3',
-      name: 'Evos Milliy & Fast Food',
-      slug: 'evos',
-      address: 'Toshkent sh., Amir Temur shoh ko‘chasi',
-      phone: '+998 71 203 12 12',
-      currency: 'UZS',
-      created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-      profiles: {
-        id: 'adm-3',
-        email: 'evos@qrmenu.uz',
-        full_name: 'Farrux Rustamov',
-        role: 'admin' as const,
-      },
-      menus: [{ id: 'm-3', name: 'Standart menyu', is_active: true }],
-    },
-    {
-      id: 'demo-4',
-      name: 'Safia Bakery & Cafe',
-      slug: 'safia',
-      address: 'Toshkent sh., Mirobod tumani',
-      phone: '+998 78 113 40 40',
-      currency: 'UZS',
-      created_at: new Date(Date.now() - 86400000 * 9).toISOString(),
-      profiles: {
-        id: 'adm-4',
-        email: 'safia@qrmenu.uz',
-        full_name: 'Madina Ismoilova',
-        role: 'admin' as const,
-      },
-      menus: [{ id: 'm-4', name: 'Shirinliklar menyusi', is_active: true }],
-    },
-  ]
+    return data || []
+  } catch (err) {
+    console.error('getAllRestaurants unexpected error:', err)
+    return []
+  }
 }
 
 /**
@@ -257,7 +118,8 @@ export async function createAdminWithRestaurant(formData: FormData) {
     .eq('id', newUserId)
 
   if (profileError) {
-    console.error('Profile update error:', profileError)
+    await adminSupabase.auth.admin.deleteUser(newUserId)
+    return { error: 'Admin profilini saqlab bo?lmadi. Qayta urinib ko?ring.' }
   }
 
   // 3. Create restaurant linked to the new admin
@@ -291,15 +153,23 @@ export async function createAdminWithRestaurant(formData: FormData) {
     .single()
 
   if (restaurant) {
-    await adminSupabase
+    const { error: menuError } = await adminSupabase
       .from('menus')
       .insert({
         restaurant_id: restaurant.id,
         name: 'Asosiy menyu',
         is_active: true,
       })
+    if (menuError) {
+      await adminSupabase.auth.admin.deleteUser(newUserId)
+      return { error: 'Menyuni saqlab bo?lmadi. Qayta urinib ko?ring.' }
+    }
+  } else {
+    await adminSupabase.auth.admin.deleteUser(newUserId)
+    return { error: 'Restoranni saqlab bo?lmadi. Qayta urinib ko?ring.' }
   }
 
+  revalidatePath('/super-admin', 'layout')
   redirect('/super-admin/restaurants')
 }
 
@@ -334,6 +204,9 @@ export async function updateRestaurantByAdmin(restaurantId: string, formData: Fo
     return { error: error.message || 'Yangilashda xatolik yuz berdi.' }
   }
 
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/dashboard', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -362,6 +235,7 @@ export async function deleteRestaurantAndAdmin(restaurantId: string) {
     return { error: error.message || 'O\'chirishda xatolik yuz berdi.' }
   }
 
+  revalidatePath('/super-admin', 'layout')
   redirect('/super-admin/restaurants')
 }
 
@@ -396,5 +270,8 @@ export async function updateAdminPassword(userId: string, newPassword: string) {
     return { error: error.message || 'Parolni yangilashda xatolik yuz berdi.' }
   }
 
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/dashboard', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }

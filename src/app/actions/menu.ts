@@ -36,17 +36,18 @@ async function getAdminRestaurant() {
 async function getAdminMenu() {
   const { supabase, restaurantId } = await getAdminRestaurant()
 
-  const { data: menu } = await supabase
+  const { data: menu, error: menuError } = await supabase
     .from('menus')
     .select('id')
     .eq('restaurant_id', restaurantId)
     .order('created_at', { ascending: true })
     .limit(1)
-    .single()
+    .maybeSingle()
 
+  if (menuError) throw new Error('Menyuni yuklab bo?lmadi.')
   if (!menu) {
     // Create a default menu if none exists
-    const { data: newMenu } = await supabase
+    const { data: newMenu, error: createError } = await supabase
       .from('menus')
       .insert({
         restaurant_id: restaurantId,
@@ -56,7 +57,8 @@ async function getAdminMenu() {
       .select()
       .single()
 
-    return { supabase, restaurantId, menuId: newMenu!.id }
+    if (createError || !newMenu) throw new Error('Menyuni saqlab bo?lmadi.')
+    return { supabase, restaurantId, menuId: newMenu.id }
   }
 
   return { supabase, restaurantId, menuId: menu.id }
@@ -141,6 +143,8 @@ export async function updateMyRestaurant(formData: FormData) {
     .from('restaurants')
     .update(updateData)
     .eq('id', restaurantId)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message || 'Yangilashda xatolik yuz berdi.' }
@@ -148,6 +152,8 @@ export async function updateMyRestaurant(formData: FormData) {
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -179,8 +185,7 @@ export async function getCategories() {
     .order('sort_order', { ascending: true })
 
   if (error) {
-    console.error('Error fetching categories:', error)
-    return []
+    throw new Error('Kategoriyalarni yuklab bo?lmadi. Qayta urinib ko?ring.')
   }
 
   // Sort items within each category
@@ -228,6 +233,9 @@ export async function createCategory(formData: FormData) {
   }
 
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -247,12 +255,17 @@ export async function updateCategory(categoryId: string, formData: FormData) {
     .from('categories')
     .update({ name })
     .eq('id', categoryId)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message || 'Yangilashda xatolik.' }
   }
 
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -266,12 +279,17 @@ export async function deleteCategory(categoryId: string) {
     .from('categories')
     .delete()
     .eq('id', categoryId)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message || 'O\'chirishda xatolik.' }
   }
 
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -336,6 +354,9 @@ export async function createItem(formData: FormData) {
   }
 
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -374,6 +395,7 @@ export async function updateItem(itemId: string, formData: FormData) {
     updateData.category_id = categoryId
   }
 
+  let oldImageUrl: string | null = null
   // Upload new image if provided
   if (imageFile && imageFile.size > 0) {
     // Delete old image first
@@ -383,9 +405,7 @@ export async function updateItem(itemId: string, formData: FormData) {
       .eq('id', itemId)
       .single()
 
-    if (oldItem?.image_url) {
-      await deleteImage(oldItem.image_url)
-    }
+    oldImageUrl = oldItem?.image_url || null
 
     const { url, error: uploadError } = await uploadImage(imageFile, 'items')
     if (uploadError) {
@@ -398,12 +418,18 @@ export async function updateItem(itemId: string, formData: FormData) {
     .from('items')
     .update(updateData)
     .eq('id', itemId)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message || 'Yangilashda xatolik.' }
   }
 
+  if (oldImageUrl && updateData.image_url) await deleteImage(oldImageUrl)
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -417,12 +443,17 @@ export async function toggleItemAvailability(itemId: string, isAvailable: boolea
     .from('items')
     .update({ is_available: isAvailable })
     .eq('id', itemId)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message || 'Yangilashda xatolik.' }
   }
 
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }
 
@@ -439,19 +470,21 @@ export async function deleteItem(itemId: string) {
     .eq('id', itemId)
     .single()
 
-  if (item?.image_url) {
-    await deleteImage(item.image_url)
-  }
-
   const { error } = await supabase
     .from('items')
     .delete()
     .eq('id', itemId)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message || 'O\'chirishda xatolik.' }
   }
 
+  if (item?.image_url) await deleteImage(item.image_url)
   revalidatePath('/dashboard/menu')
+  revalidatePath('/dashboard')
+  revalidatePath('/super-admin', 'layout')
+  revalidatePath('/r/[slug]', 'page')
   return { success: true }
 }

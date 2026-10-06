@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { unstable_rethrow } from 'next/navigation'
 import {
   ArrowLeft,
   User,
@@ -55,7 +56,8 @@ export default function NewAdminRestaurantPage() {
         setLoading(false)
       }
       // On success, the action redirects
-    } catch {
+    } catch (error) {
+      unstable_rethrow(error)
       setError('Kutilmagan xatolik yuz berdi.')
       setLoading(false)
     }

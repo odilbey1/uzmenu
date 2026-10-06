@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { requireSuperAdmin } from '@/utils/supabase/authorization'
 import { redirect } from 'next/navigation'
 import {
   ArrowLeft,
@@ -20,6 +21,7 @@ type PageProps = {
 }
 
 export default async function RestaurantDetailPage({ params }: PageProps) {
+  await requireSuperAdmin()
   const { id } = await params
   const adminSupabase = createAdminClient()
   const { data: restaurant } = await adminSupabase

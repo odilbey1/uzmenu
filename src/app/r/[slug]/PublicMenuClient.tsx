@@ -44,6 +44,14 @@ export default function PublicMenuClient({
   const [selectedItemForModal, setSelectedItemForModal] = useState<MenuItem | null>(null)
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
 
+  const categories = useMemo<VisualCategory[]>(() => restaurant.slug === 'demo'
+    ? VISUAL_CATEGORIES
+    : (restaurant.categories || []).map(category => ({
+        ...category,
+        image: category.items.find(item => item.image_url)?.image_url || restaurant.logo_url || '',
+        items: category.items.filter(item => item.is_available),
+      })), [restaurant])
+
   const currencySymbol = restaurant.currency === 'UZS' ? "so'm" : restaurant.currency
 
   const formatPrice = (price: number) => {
@@ -53,8 +61,8 @@ export default function PublicMenuClient({
   // Active category object
   const activeCategory = useMemo(() => {
     if (!activeCategoryId) return null
-    return VISUAL_CATEGORIES.find((c) => c.id === activeCategoryId) || null
-  }, [activeCategoryId])
+    return categories.find((c) => c.id === activeCategoryId) || null
+  }, [activeCategoryId, categories])
 
   // Search results across all categories
   const searchResults = useMemo(() => {
@@ -62,7 +70,7 @@ export default function PublicMenuClient({
     const query = searchQuery.toLowerCase()
     const results: { categoryName: string; item: MenuItem }[] = []
 
-    VISUAL_CATEGORIES.forEach((cat) => {
+    categories.forEach((cat) => {
       cat.items.forEach((item) => {
         if (
           item.name.toLowerCase().includes(query) ||
@@ -74,7 +82,7 @@ export default function PublicMenuClient({
     })
 
     return results
-  }, [searchQuery])
+  }, [searchQuery, categories])
 
   const handleCardClick = (cat: VisualCategory) => {
     if (cat.id === 'about-us') {
@@ -264,7 +272,7 @@ export default function PublicMenuClient({
 
             {/* Quick Category Switcher Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {VISUAL_CATEGORIES.filter((c) => c.id !== 'about-us').map((c) => (
+              {categories.filter((c) => c.id !== 'about-us').map((c) => (
                 <button
                   key={c.id}
                   onClick={() => setActiveCategoryId(c.id)}
@@ -335,7 +343,8 @@ export default function PublicMenuClient({
              B. EXACT 24-CARD VISUAL GRID (PIXEL-PERFECT MATCH TO SCREENSHOT)
              ========================================================================= */
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 animate-in fade-in duration-200">
-            {VISUAL_CATEGORIES.map((cat) => (
+            {categories.length === 0 && <p className="col-span-full py-12 text-center text-neutral-400">Hozircha menyuga taomlar qo?shilmagan.</p>}
+            {categories.map((cat) => (
               <div
                 key={cat.id}
                 role="button"
@@ -345,11 +354,11 @@ export default function PublicMenuClient({
                 className="relative aspect-[3/4] sm:aspect-[4/5] rounded-2xl sm:rounded-3xl overflow-hidden border border-neutral-800/90 bg-neutral-900 group cursor-pointer shadow-xl hover:border-neutral-600 hover:shadow-2xl transition-all duration-300 select-none"
               >
                 {/* Background Food Photo */}
-                <img
+                {cat.image && <img
                   src={cat.image}
                   alt={cat.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+                />}
 
                 {/* Dark Vignette Overlay for Text Legibility */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/10" />
