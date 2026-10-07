@@ -18,7 +18,7 @@ export async function updateSession(request: NextRequest) {
   // Fast-path 2: Check for presence of Supabase auth cookie before making network call
   const allCookies = request.cookies.getAll()
   const hasAuthCookie = allCookies.some(
-    (c) => /^sb-.+-auth-token(?:\.\d+)?$/.test(c.name)
+    (c) => c.name.startsWith('sb-') && (c.name.includes('-auth-token') || c.name.includes('access_token') || c.name.includes('token'))
   )
 
   // If user has NO auth cookie and tries to access protected admin route, redirect instantly
@@ -77,8 +77,7 @@ export async function updateSession(request: NextRequest) {
 
   // Authenticated user — check role from metadata (instant)
   if (user) {
-    const { data: profile, error } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (error) return NextResponse.json({ error: 'Hisob huquqlarini tekshirib bo?lmadi.' }, { status: 503 })
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     const role = profile?.role
 
     // Super Admin route — only super_admin role allowed

@@ -31,8 +31,13 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error)
         setLoading(false)
+        return
       }
-      // On success, the action redirects based on role
+
+      if (result?.redirectUrl) {
+        window.location.href = result.redirectUrl
+        return
+      }
     } catch {
       setError('Kutilmagan xatolik yuz berdi.')
       setLoading(false)

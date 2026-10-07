@@ -30,6 +30,7 @@ export async function login(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  let redirectUrl = '/dashboard'
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -38,11 +39,11 @@ export async function login(formData: FormData) {
       .single()
 
     if (profile?.role === 'super_admin') {
-      redirect('/super-admin')
+      redirectUrl = '/super-admin'
     }
   }
 
-  redirect('/dashboard')
+  return { success: true, redirectUrl }
 }
 
 export async function logout() {
